@@ -1,13 +1,17 @@
 {
-  "name": "angular-electron",
-  "description": "Angular Electron sample",
+  "name": "fish-voa",
+  "description": "VOA Engilish Learning",
   "author": {
-    "name": "Maxime GRIS",
-    "email": "maxime.gris@gmail.com"
+    "name": "Fish Tang",
+    "email": "tangqianyu123456@gmail.com"
   },
-  "version": "13.0.0",
+  "version": "1.0.0",
   "main": "main.js",
   "private": true,
   "dependencies": {
+    "sequelize": "6.32.1",
+    "sqlite3": "5.1.6",
+    "axios": "^1.3.4",
+    "cheerio": "^1.0.0-rc.12"
   }
 }

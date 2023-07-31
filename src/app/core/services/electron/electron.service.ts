@@ -5,9 +5,10 @@ import { Injectable } from '@angular/core';
 import { ipcRenderer, webFrame } from 'electron';
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
+import { MessageService } from 'primeng/api';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ElectronService {
   ipcRenderer!: typeof ipcRenderer;
@@ -15,7 +16,7 @@ export class ElectronService {
   childProcess!: typeof childProcess;
   fs!: typeof fs;
 
-  constructor() {
+  constructor(private messageService: MessageService) {
     // Conditional imports
     if (this.isElectron) {
       this.ipcRenderer = (window as any).require('electron').ipcRenderer;
@@ -52,5 +53,88 @@ export class ElectronService {
 
   get isElectron(): boolean {
     return !!(window && window.process && window.process.type);
+  }
+
+  getPostList(
+    data: {
+      category: string;
+      keyword: string;
+      orderType: string;
+      pageNumber: number;
+      pageSize: number;
+    },
+    callback: (post: any[]) => void
+  ) {
+    if (this.isElectron) {
+      this.ipcRenderer.send('get-post-list', data);
+      this.ipcRenderer.on('get-post-list-reply', (event, args) => {
+        if (args.success) {
+          callback(args.postList);
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: args.error });
+        }
+      });
+    }
+  }
+
+  getPostDetail(id: number, callback: (post: any[]) => void) {
+    if (this.isElectron) {
+      this.ipcRenderer.send('get-post-detail', { id });
+      this.ipcRenderer.on('get-post-detail-reply', (event, args) => {
+        if (args.success) {
+          callback(args.post);
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: args.error });
+        }
+      });
+    }
+  }
+
+  getVideoList(
+    data: {
+      category: string;
+      keyword: string;
+      orderType: string;
+      pageNumber: number;
+      pageSize: number;
+    },
+    callback: (video: any[]) => void
+  ) {
+    if (this.isElectron) {
+      this.ipcRenderer.send('get-video-list', data);
+      this.ipcRenderer.on('get-video-list-reply', (event, args) => {
+        if (args.success) {
+          callback(args.videoList);
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: args.error });
+        }
+      });
+    }
+  }
+
+  getVideoDetail(id: number, callback: (video: any[]) => void) {
+    if (this.isElectron) {
+      this.ipcRenderer.send('get-video-detail', { id });
+      this.ipcRenderer.on('get-video-detail-reply', (event, args) => {
+        if (args.success) {
+          callback(args.video);
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: args.error });
+        }
+      });
+    }
+  }
+
+  getFetchData(data: { type: string; category: string }, callback: (data: any) => void) {
+    if (this.isElectron) {
+      this.ipcRenderer.send('get-fetch-data', data);
+      this.ipcRenderer.on('get-fetch-data-reply', (event, args) => {
+        if (args.success) {
+          callback(args.data);
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: args.error });
+        }
+      });
+    }
   }
 }

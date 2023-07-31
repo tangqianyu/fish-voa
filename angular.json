@@ -3,7 +3,8 @@
   "cli": {
     "schematicCollections": [
       "@angular-eslint/schematics"
-    ]
+    ],
+    "analytics": false
   },
   "version": 1,
   "newProjectRoot": "projects",
@@ -36,9 +37,13 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "./node_modules/aplayer/dist/APlayer.min.css",
+              "./node_modules/@videogular/ngx-videogular/fonts/videogular.css"
             ],
-            "scripts": [],
+            "scripts": [
+              "./node_modules/aplayer/dist/APlayer.min.js"
+            ],
             "customWebpackConfig": {
               "path": "./angular.webpack.js",
               "replaceDuplicatePlugins": true

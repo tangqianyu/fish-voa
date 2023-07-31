@@ -1,5 +1,5 @@
 {
-  "asar": true,
+  "asar":  false,
   "directories": {
     "output": "release/"
   },
@@ -19,9 +19,6 @@
     "target": [
       "portable"
     ]
-  },
-  "portable": {
-    "splashImage": "dist/assets/icons/electron.bmp"
   },
   "mac": {
     "icon": "dist/assets/icons",

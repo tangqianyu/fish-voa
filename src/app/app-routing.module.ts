@@ -1,28 +1,30 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { PageNotFoundComponent } from './shared/components';
 
-import { HomeRoutingModule } from './home/home-routing.module';
-import { DetailRoutingModule } from './detail/detail-routing.module';
+import { PostRoutingModule } from './pages/post/post-routing.module';
+import { VideoRoutingModule } from './pages/video/video-routing.module';
+import { AppLayoutComponent } from './layout/app.layout.component';
 
 const routes: Routes = [
+  { path: '', redirectTo: 'post/post-list/Technology_Report', pathMatch: 'full' },
   {
     path: '',
-    redirectTo: 'home',
-    pathMatch: 'full'
+    component: AppLayoutComponent,
+    children: [
+      {
+        path: 'post',
+        loadChildren: () => import('./pages/post/post.module').then(m => m.PostModule),
+      },
+      {
+        path: 'video',
+        loadChildren: () => import('./pages/video/video.module').then(m => m.VideoModule),
+      },
+    ],
   },
-  {
-    path: '**',
-    component: PageNotFoundComponent
-  }
 ];
 
 @NgModule({
-  imports: [
-    RouterModule.forRoot(routes, {}),
-    HomeRoutingModule,
-    DetailRoutingModule
-  ],
-  exports: [RouterModule]
+  imports: [RouterModule.forRoot(routes, {}), PostRoutingModule, VideoRoutingModule],
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

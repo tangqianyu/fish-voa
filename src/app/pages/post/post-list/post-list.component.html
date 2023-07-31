@@ -1,0 +1,60 @@
+<div class="card">
+  <p-dataView #dv [value]="postList">
+    <ng-template pTemplate="header">
+      <div class="flex flex-column md:flex-row md:justify-content-between gap-2">
+        <p-dropdown
+          [options]="sortOptions"
+          placeholder="Sort By Date"
+          [(ngModel)]="orderType"
+          (ngModelChange)="onSortChange()"></p-dropdown>
+        <div>
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              type="search"
+              pInputText
+              placeholder="Search by Title"
+              [(ngModel)]="keyword"
+              (ngModelChange)="onFilter()" />
+          </span>
+          <p-button type="button" class="ml-3" icon="pi pi-refresh" (click)="refresh()"></p-button>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template let-post pTemplate="listItem">
+      <div class="col-12">
+        <div class="flex flex-column xl:flex-row xl:align-items-start p-4 gap-4">
+          <div
+            class="flex flex-column sm:flex-row justify-content-between align-items-start flex-1 gap-4">
+            <div class="flex flex-column align-items-center sm:align-items-start gap-3">
+              <div
+                class="text-2xl font-bold text-900 hover:underline cursor-pointer"
+                (click)="goDetail(post.id)">
+                {{ post.title }}
+              </div>
+              <div class="flex align-items-center gap-3">
+                <span class="flex align-items-center gap-2">
+                  <i class="pi pi-tag"></i>
+                  <span class="font-semibold text-primary">{{ category }}</span>
+                </span>
+              </div>
+            </div>
+            <div class="flex">
+              <span class="text-xl font-semibold text-red-300">{{ post.publish_date }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </p-dataView>
+
+  <div class="flex justify-content-center">
+    <p-paginator
+      (onPageChange)="onPageChange($event)"
+      [first]="pageNumber"
+      [rows]="pageSize"
+      [totalRecords]="120"
+      [rowsPerPageOptions]="[5, 10, 20]"></p-paginator>
+  </div>
+</div>

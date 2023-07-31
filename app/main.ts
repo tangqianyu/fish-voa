@@ -1,26 +1,98 @@
-import {app, BrowserWindow, screen} from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, screen } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import { sequelize } from './db';
+import { findPostById, findPostsByCategory } from './post.';
+import { findVideoById, findVideosByCategory } from './video';
+import { fetchNewData } from './fetchData';
 
 let win: BrowserWindow | null = null;
 const args = process.argv.slice(1),
   serve = args.some(val => val === '--serve');
 
 function createWindow(): BrowserWindow {
-
   const size = screen.getPrimaryDisplay().workAreaSize;
+  const template: MenuItemConstructorOptions[] = [];
 
   // Create the browser window.
   win = new BrowserWindow({
-    x: 0,
-    y: 0,
-    width: size.width,
-    height: size.height,
+    width: (size.width * 0.8) | 0,
+    height: (size.height * 0.8) | 0,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: true,
-      allowRunningInsecureContent: (serve),
-      contextIsolation: false,
+      allowRunningInsecureContent: serve ? true : false,
+      contextIsolation: false, // false if you want to run e2e test with Spectron
     },
+  });
+  win.center();
+  win.setMinimumSize(400, 400);
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+
+  ipcMain.on('get-post-list', async (event, args) => {
+    const { category, keyword, orderType, pageNumber, pageSize } = args;
+    try {
+      const postList = await findPostsByCategory(
+        category,
+        keyword,
+        orderType,
+        pageNumber,
+        pageSize
+      );
+      event.reply('get-post-list-reply', { success: true, postList });
+    } catch (error) {
+      event.reply('get-post-list-reply', { success: false, error: error });
+    }
+  });
+
+  ipcMain.on('get-post-detail', async (event, args) => {
+    const { id } = args;
+    try {
+      const post = await findPostById(id);
+      event.reply('get-post-detail-reply', { success: true, post });
+    } catch (error) {
+      event.reply('get-post-detail-reply', { success: false, error: error });
+    }
+  });
+
+  ipcMain.on('get-video-list', async (event, args) => {
+    const { category, keyword, orderType, pageNumber, pageSize } = args;
+    try {
+      const videoList = await findVideosByCategory(
+        category,
+        keyword,
+        orderType,
+        pageNumber,
+        pageSize
+      );
+      event.reply('get-video-list-reply', { success: true, videoList });
+    } catch (error) {
+      event.reply('get-video-list-reply', { success: false, error: error });
+    }
+  });
+
+  ipcMain.on('get-video-detail', async (event, args) => {
+    const { id } = args;
+    try {
+      const video = await findVideoById(id);
+      event.reply('get-video-detail-reply', { success: true, video });
+    } catch (error) {
+      event.reply('get-video-detail-reply', { success: false, error: error });
+    }
+  });
+
+  ipcMain.on('get-fetch-data', async (event, args) => {
+    const { type, category } = args;
+    if (type === 'post') {
+      try {
+        const data = await fetchNewData(type, category);
+        event.reply('get-fetch-data-reply', { success: true, data });
+      } catch (error) {
+        event.reply('get-fetch-data-reply', { success: false, error: error });
+      }
+    }
   });
 
   if (serve) {
@@ -34,7 +106,7 @@ function createWindow(): BrowserWindow {
     let pathIndex = './index.html';
 
     if (fs.existsSync(path.join(__dirname, '../dist/index.html'))) {
-       // Path when running electron in local folder
+      // Path when running electron in local folder
       pathIndex = '../dist/index.html';
     }
 
@@ -58,7 +130,17 @@ try {
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   // Added 400 ms to fix the black background issue while using transparent window. More detais at https://github.com/electron/electron/issues/15947
-  app.on('ready', () => setTimeout(createWindow, 400));
+  app.on('ready', () => {
+    sequelize
+      .sync()
+      .then(() => {
+        console.log('Database and tables created!');
+      })
+      .catch(err => {
+        console.error('Error syncing the database:', err);
+      });
+    setTimeout(createWindow, 400);
+  });
 
   // Quit when all windows are closed.
   app.on('window-all-closed', () => {
@@ -76,7 +158,6 @@ try {
       createWindow();
     }
   });
-
 } catch (e) {
   // Catch Error
   // throw e;

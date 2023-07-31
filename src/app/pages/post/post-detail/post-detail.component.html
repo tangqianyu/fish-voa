@@ -1,0 +1,10 @@
+<p-breadcrumb
+  class="max-w-full"
+  [model]="items"
+  [home]="home"
+  (onItemClick)="handleItemClick($event)"></p-breadcrumb>
+
+<div class="card mt-3 relative">
+  <div class="sticky mb-3" id="player"></div>
+  <div [innerHTML]="post?.content | safeHtml"></div>
+</div>
