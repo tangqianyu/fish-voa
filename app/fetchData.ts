@@ -1,7 +1,7 @@
 import cheerio from 'cheerio';
 import axios from 'axios';
 import { Post, Video } from './db';
-import { compareDates } from './common';
+import { compareDates } from './utils/common';
 
 type FetchType = 'post' | 'video';
 

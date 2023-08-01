@@ -17,6 +17,7 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   id!: number;
   post: any;
   player: any;
+  isEn = true;
 
   constructor(
     private location: Location,
@@ -60,6 +61,14 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       });
     });
+  }
+
+  translate() {
+    if (this.isEn) {
+      this.isEn = false;
+      return;
+    }
+    this.isEn = true;
   }
 
   ngOnDestroy(): void {

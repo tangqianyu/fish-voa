@@ -49,16 +49,16 @@ let userAgent = null;
 let db;
 
 async function init() {
-  // await bootstrap();
+  await bootstrap();
   // getFailVideo()
 
-  getPageVideo(videoCategories[0].name, 1);
+  // getPageVideo(videoCategories[0].name, 1);
 
-  // for (const category of categories) {
-  //   for (let i = 1; i <= category.page; i++) {
-  //     await getPagePosts(category.name, i);
-  //   }
-  // }
+  for (const category of categories) {
+    for (let i = 1; i <= category.page; i++) {
+      await getPagePosts(category.name, i);
+    }
+  }
 
   // for (const videoCategory of videoCategories) {
   //   for (let i = 1; i <= videoCategory.page; i++) {
@@ -86,7 +86,8 @@ async function bootstrap() {
         audio_link TEXT,
         lrc_link TEXT,
         publish_date DATE,
-        content Text
+        content TEXT,
+        translate_content TEXT
       );`;
 
   db.run(sql, function (err) {
@@ -131,11 +132,14 @@ async function getPagePosts(category, pageNumber) {
       const publish_date = $(element).contents().last().text().trim();
 
       try {
-        const { content, audio_link, lrc_link } = await getPostDetail(post_link, {
-          title,
-          category,
-          publish_date,
-        });
+        const { content, audio_link, lrc_link, translate_content } = await getPostDetail(
+          post_link,
+          {
+            title,
+            category,
+            publish_date,
+          }
+        );
 
         const data = {
           title,
@@ -144,10 +148,11 @@ async function getPagePosts(category, pageNumber) {
           lrc_link,
           publish_date: convertToSQLiteDate(publish_date),
           content,
+          translate_content,
         };
 
         db.run(
-          `INSERT INTO posts(title, category, audio_link, lrc_link, publish_date, content) VALUES(?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO posts(title, category, audio_link, lrc_link, publish_date, content, translate_content) VALUES(?, ?, ?, ?, ?, ?, ?)`,
           [
             data.title,
             data.category,
@@ -155,6 +160,7 @@ async function getPagePosts(category, pageNumber) {
             data.lrc_link,
             data.publish_date,
             data.content,
+            data.translate_content,
           ],
           function (err) {
             if (err) {
@@ -178,11 +184,19 @@ async function getPostDetail(link, info) {
     const response = await axios.get(`${BASE_URL}${link}`);
     const $ = cheerio.load(response.data);
     const content = $('#righter > .content').first().html() || '';
+    let translate_content = '';
     const audio_link = $('#mp3').first().attr('href') || '';
     const lrc_link = $('#lrc').first().attr('href') || '';
-    return { content, audio_link, lrc_link };
+    const translate_link = $('#EnPage').first().attr('href') || ''
+
+    if (translate_link) {
+      const translateResponse = await axios.get(`${BASE_URL}/VOA_Special_English/${translate_link}`);
+      const $t = cheerio.load(translateResponse.data);
+      translate_content = $t('#righter > .content').first().html() || '';
+    }
+    return { content, audio_link, lrc_link, translate_content };
   } catch (error) {
-    writeFailUrl(link, info, 'fail1.text');
+    writeFailUrl(link, info, 'url.text');
     // console.log(error);
   }
 }
@@ -229,6 +243,7 @@ function getFailPost() {
         title,
         category,
         publish_date,
+        translate_content,
       });
 
       const data = {
@@ -238,10 +253,11 @@ function getFailPost() {
         lrc_link,
         publish_date: convertToSQLiteDate(publish_date),
         content,
+        translate_content,
       };
 
       db.run(
-        `INSERT INTO posts(title, category, audio_link, lrc_link, publish_date, content) VALUES(?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO posts(title, category, audio_link, lrc_link, publish_date, content, translate_content) VALUES(?, ?, ?, ?, ?, ?, ?)`,
         [
           data.title,
           data.category,
@@ -249,6 +265,7 @@ function getFailPost() {
           data.lrc_link,
           data.publish_date,
           data.content,
+          data.translate_content
         ],
         function (err) {
           if (err) {
@@ -273,13 +290,6 @@ async function getPageVideo(category, pageNumber) {
   try {
     const response = await axios.get(pageUrl);
     const $ = cheerio.load(response.data);
-
-    //  for(const element of $('#righter .list > ul > li')){
-
-    //   const title = $($(element).find('a[href^="/VOA_Videos"]:not([class])')[0]).text().trim();
-    //   console.log('title==',title);
-    //  }
-
 
     // $('#righter .list > ul > li').each(async (index, element) => {
     //   const title = $($(element).find('a[href^="/VOA_Videos"]:not([class])')[0]).text().trim();
@@ -334,7 +344,6 @@ async function getVideoDetail(link, info) {
     writeFailUrl(link, info, 'failVideo1.text');
   }
 }
-
 
 function getFailVideo() {
   const fileStream = fs.createReadStream('failVideo.text');

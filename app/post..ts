@@ -34,7 +34,6 @@ export async function findPostsByCategory(
     const posts = await Post.findAll({
       raw: true,
       where: whereQuery,
-      attributes: ['id', 'title', 'category', 'publish_date'],
       offset,
       limit: pageSize,
       order: [['publish_date', orderType]],

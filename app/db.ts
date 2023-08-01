@@ -34,6 +34,9 @@ export const Post = sequelize.define(
     content: {
       type: DataTypes.TEXT,
     },
+    translate_content: {
+      type: DataTypes.TEXT,
+    },
   },
   {
     timestamps: false, // 禁用 createdAt 和 updatedAt

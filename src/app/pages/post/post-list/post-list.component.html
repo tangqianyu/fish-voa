@@ -34,9 +34,13 @@
                 {{ post.title }}
               </div>
               <div class="flex align-items-center gap-3">
-                <span class="flex align-items-center gap-2">
-                  <i class="pi pi-tag"></i>
-                  <span class="font-semibold text-primary">{{ category }}</span>
+                <span class="flex align-items-center gap-2" *ngIf="post.lrc_link">
+                  <i class="pi pi-link text-primary"></i>
+                  <span class="font-semibold text-primary">LRC</span>
+                </span>
+                <span class="flex align-items-center gap-2" *ngIf="post.translate_content">
+                  <i class="pi pi-language text-green-300"></i>
+                  <span class="font-semibold text-green-300">译</span>
                 </span>
               </div>
             </div>

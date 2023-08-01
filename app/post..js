@@ -38,7 +38,6 @@ function findPostsByCategory(category, keyword = '', orderType, pageNumber, page
             const posts = yield db_1.Post.findAll({
                 raw: true,
                 where: whereQuery,
-                attributes: ['id', 'title', 'category', 'publish_date'],
                 offset,
                 limit: pageSize,
                 order: [['publish_date', orderType]],
